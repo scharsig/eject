@@ -1,5 +1,6 @@
 #include <QMetaMethod>
 #include <QMetaClassInfo>
+#include <QDebug>
 
 #include "injector.h"
 #include "private/injectorprivate.h"
@@ -67,7 +68,52 @@ QObject *Injector::getObjectInstance(const char *className)
 
     QMetaObject metaObject = d->getType(className);
 
-    QObject *newObject = metaObject.newInstance();
+    QMetaMethod metaCtor = metaObject.constructor(0);
+    if(!metaCtor.isValid())
+        return nullptr;
+
+    QList<QByteArray> names = metaCtor.parameterTypes();
+
+    int i = 0;
+    bool use0 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use1 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use2 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use3 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use4 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use5 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use6 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use7 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use8 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+    bool use9 = names.count() > i && metaCtor.parameterType(i++) != QMetaType::QObjectStar;
+
+    QByteArray name0 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name1 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name2 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name3 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name4 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name5 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name6 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name7 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name8 = names.isEmpty() ? "" : names.takeFirst();
+    QByteArray name9 = names.isEmpty() ? "" : names.takeFirst();
+
+    QGenericArgument val0 = name0.isEmpty() || !use0 ? QGenericArgument() : QGenericArgument(name0.constData(), getBoundValue(className, metaCtor, 0));
+    QGenericArgument val1 = name1.isEmpty() || !use1 ? QGenericArgument() : QGenericArgument(name1.constData(), getBoundValue(className, metaCtor, 1));
+    QGenericArgument val2 = name2.isEmpty() || !use2 ? QGenericArgument() : QGenericArgument(name2.constData(), getBoundValue(className, metaCtor, 2));
+    QGenericArgument val3 = name3.isEmpty() || !use3 ? QGenericArgument() : QGenericArgument(name3.constData(), getBoundValue(className, metaCtor, 3));
+    QGenericArgument val4 = name4.isEmpty() || !use4 ? QGenericArgument() : QGenericArgument(name4.constData(), getBoundValue(className, metaCtor, 4));
+    QGenericArgument val5 = name5.isEmpty() || !use5 ? QGenericArgument() : QGenericArgument(name5.constData(), getBoundValue(className, metaCtor, 5));
+    QGenericArgument val6 = name6.isEmpty() || !use6 ? QGenericArgument() : QGenericArgument(name6.constData(), getBoundValue(className, metaCtor, 6));
+    QGenericArgument val7 = name7.isEmpty() || !use7 ? QGenericArgument() : QGenericArgument(name7.constData(), getBoundValue(className, metaCtor, 7));
+    QGenericArgument val8 = name8.isEmpty() || !use8 ? QGenericArgument() : QGenericArgument(name8.constData(), getBoundValue(className, metaCtor, 8));
+    QGenericArgument val9 = name9.isEmpty() || !use9 ? QGenericArgument() : QGenericArgument(name9.constData(), getBoundValue(className, metaCtor, 9));
+
+    QObject *newObject = metaObject.newInstance(val0, val1, val2, val3, val4, val5, val6, val7, val8, val9);
+
+    qDebug() << "Use0: " << use0 << ", name0: " << name0;
+
+    if(newObject == nullptr)
+        qInfo("%s: newObject is null.", className);
 
     createConnections(newObject);
 
@@ -120,6 +166,26 @@ void Injector::createConnectionsFromClassInfo(QObject *sender)
 
         autoConnect(sender, receiver);
     }
+}
+
+void Injector::addValueBinding(const QString &className, const QString &paramName, VoidValue &&value)
+{
+    d->addBinding(className, paramName, std::move(value));
+}
+
+void* Injector::getBoundValue(const QString &className, const QMetaMethod &method, int index)
+{
+    if(method.parameterCount() <= index)
+        return nullptr;
+
+    QString paramName = method.parameterNames().at(index);
+
+    VoidValue *voidValue = d->getBinding(className, paramName);
+
+    if(voidValue == nullptr)
+        return nullptr;
+
+    return voidValue->pointer();
 }
 
 void Injector::autoConnect(QObject *sender, QObject *receiver)

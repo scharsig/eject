@@ -25,14 +25,6 @@
 
 #include "eject/injector.h"
 
-QMultiHash<QString, QVariant> anies;
-
-template <class T, class V>
-void bindValue(const char *paramName, const V &value)
-{
-    anies.insert(QString("%1/%2").arg(T::staticMetaObject.className(), paramName), QVariant::fromValue<V>(value));
-}
-
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -43,6 +35,10 @@ int main(int argc, char *argv[])
     injector.addConnection<Worker, LogBase>();
     injector.addConnection<LogBase, Config>();
 
+    // Add value bindings
+    injector.addValueBinding<Config, int>(QStringLiteral("logLevel"), 39);
+    injector.addValueBinding<Config, bool>(QStringLiteral("adminMode"), false);
+
     QScopedPointer<Worker> worker(injector.getInstance<Worker>());
 
     if(worker != nullptr)
@@ -52,9 +48,9 @@ int main(int argc, char *argv[])
 }
 
 // Connecting objects with signals and slots
-// Way 1: Using addConnection binding on injector.
-// Way 2: Annotating classes.
-// Way 3: JSON configuration
+// Way 1: Using addConnection binding on injector (DONE).
+// Way 2: Annotating classes (DONE).
+// Way 3: JSON configuration.
 
 // Getting values for constructors:
 // Way 1: Inheriting InjectorDataProvider

@@ -1,5 +1,13 @@
 #include "injectorprivate.h"
 
+InjectorPrivate::~InjectorPrivate()
+{
+    QList<VoidValue*> voidValues = valueBindings.values();
+    qDeleteAll(voidValues);
+    voidValues.clear();
+    valueBindings.clear();
+}
+
 InjectorPrivate::InjectorPrivate(const InjectorPrivate &other)
 {
     *this = other;
@@ -11,6 +19,7 @@ InjectorPrivate & InjectorPrivate::operator=(const InjectorPrivate &other)
     {
         types = other.types;
         connections = other.connections;
+        valueBindings = other.valueBindings;
     }
 
     return *this;
@@ -60,4 +69,17 @@ QList<QMetaObject> InjectorPrivate::getReceiver(const QMetaObject &sender) const
     }
 
     return receiverList;
+}
+
+void InjectorPrivate::addBinding(const QString &className, const QString &valueName, VoidValue &&value)
+{
+    QString key = QStringLiteral("%1/%2");
+    valueBindings.insert(key.arg(className, valueName), new VoidValue(std::move(value)));
+}
+
+VoidValue *InjectorPrivate::getBinding(const QString &className, const QString &valueName) const
+{
+    QString key = QStringLiteral("%1/%2");
+
+    return valueBindings.value(key.arg(className, valueName), nullptr);
 }

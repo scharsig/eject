@@ -1,10 +1,10 @@
 #include "config.h"
 
-Config::Config(QObject *parent /* = nullptr */)
+Config::Config(int logLevel, bool adminMode, QObject *parent /* = nullptr */)
     : QObject{parent},
-      m_logLevel{33}
+      m_logLevel{logLevel}
 {
-
+    Q_UNUSED(adminMode);
 }
 
 Config::~Config()

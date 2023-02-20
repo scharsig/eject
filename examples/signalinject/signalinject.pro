@@ -10,6 +10,7 @@ CONFIG -= app_bundle
 SOURCES += \
         config.cpp \
         eject/injector.cpp \
+        eject/internal/voidvalue.cpp \
         eject/private/injectorprivate.cpp \
         logbase.cpp \
         main.cpp \
@@ -23,6 +24,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     config.h \
     eject/injector.h \
+    eject/internal/voidvalue.h \
     eject/private/injectorprivate.h \
     ilog.h \
     iloggable.h \

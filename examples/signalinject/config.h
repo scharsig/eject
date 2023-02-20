@@ -8,7 +8,7 @@ class Config : public QObject
     Q_OBJECT
     Q_PROPERTY(int logLevel READ logLevel WRITE setLogLevel NOTIFY logLevelChanged)
 public:
-    Q_INVOKABLE explicit Config(QObject *parent = nullptr);
+    Q_INVOKABLE explicit Config(int logLevel, bool adminMode, QObject *parent = nullptr);
     virtual ~Config();
 
     int logLevel() const;

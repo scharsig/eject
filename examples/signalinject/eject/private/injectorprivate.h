@@ -5,10 +5,12 @@
 #include <QMetaObject>
 #include <QMultiHash>
 
+#include "../internal/voidvalue.h"
+
 class InjectorPrivate
 {
 public:
-    ~InjectorPrivate() = default;
+    ~InjectorPrivate();
 
 private:
     InjectorPrivate() = default;
@@ -21,9 +23,14 @@ private:
     bool hasConnection(const char *sender, const char *receiver) const;
     QList<QMetaObject> getReceiver(const QMetaObject &sender) const;
 
+    // Value Bindings
+    void addBinding(const QString &className, const QString &valueName, VoidValue &&value);
+    VoidValue *getBinding(const QString &className, const QString &valueName) const;
+
     // DATA
     QList<QMetaObject> types;
     QMultiHash<QByteArray, QByteArray> connections;
+    QHash<QString, VoidValue*> valueBindings;
 
     friend class Injector;
 };

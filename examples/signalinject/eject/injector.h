@@ -4,6 +4,8 @@
 #include <QMetaMethod>
 #include <QObject>
 
+#include "internal/voidvalue.h"
+
 class InjectorPrivate;
 
 class Injector : public QObject
@@ -43,12 +45,33 @@ public:
         return qobject_cast<T*>(newObject);
     }
 
+    template <class T, typename U>
+    void addValueBinding(const QString &paramName, const U &value)
+    {
+        QString className = T::staticMetaObject.className();
+
+        auto deletor = [](void *ptr)
+        {
+            U *doomed = static_cast<U*>(ptr);
+
+            delete doomed;
+            doomed = nullptr;
+        };
+
+        VoidValue voidValue(new U{value}, deletor);
+
+        addValueBinding(className, paramName, std::move(voidValue));
+    }
+
 private:
     bool addMetaType(const QMetaObject &metaObject);
     void addConnectionDefinition(const QMetaObject &sender, const QMetaObject &receiver);
     QObject* getObjectInstance(const char *className);
     void createConnections(QObject *sender);
     void createConnectionsFromClassInfo(QObject *sender);
+    void addValueBinding(const QString &className, const QString &paramName, VoidValue &&value);
+    void *getBoundValue(const QString &className, const QMetaMethod &method, int index);
+
     static void autoConnect(QObject *sender, QObject *receiver);
     static QList<QMetaMethod> getMethodType(const QMetaObject *meta, QMetaMethod::MethodType type);
     static QList<QMetaMethod> getSignals(const QMetaObject *meta);
